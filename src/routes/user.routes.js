@@ -8,7 +8,7 @@ const bcrypt = require('bcryptjs');
 
 const Yup = require('yup');
 
-const messagebird = require('messagebird')('BQis0I9PD9f41xYpVtUBmCiEI');
+const messagebird = require('messagebird')('SW4S76ivxM9nJ0Hx657yPKrv7');
 
 
 //cadastro do usuario
@@ -27,6 +27,12 @@ router.post('/cadastro', async (req, res) => {
     body.senha = await bcrypt.hash(body.senha, 7);
 
     const emailExist = await User.findOne({ email: body.email });
+
+    const telefoneExist = await User.findOne({ telefone: body.telefone });
+
+    if (telefoneExist) {
+        return res.json({ error: true, message: 'Este telefone já possui uma conta' });
+    };
 
     if (emailExist) {
         return res.json({ error: true, message: 'Este email já possui uma conta.' })
@@ -50,11 +56,11 @@ router.post('/login', async (req, res) => {
         const user = await User.findOne({ email: body.email });
 
         if (!user) {
-            return res.json({ error: true, message: 'Usuário não encontrado.' });
+            return res.json({ error: true, message: 'Usuário ou senha invádido.' });
         };
 
         if (!(await bcrypt.compare(body.senha, user.senha))) {
-            return res.json({ error: true, message: 'Senha incorreta.' });
+            return res.json({ error: true, message: 'Usuário ou senha invádido.' });
         };
 
         res.json({ error: false, user });
@@ -66,9 +72,34 @@ router.post('/login', async (req, res) => {
 });
 
 
+//atualiza dados user
+router.put('/edita/:id', async (req, res) => {
+    try {
+        const body = req.body;
+        const id = req.params.id;
+
+        const userRefreshed = await User.findByIdAndUpdate(id, body);
+
+        res.json({ error: false, userRefreshed });
+
+    } catch (error) {
+        res.json({ error: true, message: error.message });
+    }
+});
+
+
+
 //envia validacao sms
 router.post('/enviasmsvalidacao', async (req, res) => {
+
     const number = req.body.telefone;
+    res.json(number);
+
+    const telefoneExist = await User.findOne({ telefone: number });
+
+    if (!telefoneExist) {
+        return res.json({ error: true, message: '' });
+    }
 
     messagebird.verify.create(number, {
         originator: 'Code',
@@ -86,9 +117,16 @@ router.post('/enviasmsvalidacao', async (req, res) => {
 
 
 //valida sms mandado
-router.post('/smsvalidacao', (req, res) => {
+router.post('/smsvalidacao', async (req, res) => {
     var id = req.body.id;
     var token = req.body.token;
+    var telefoneNumber = req.body.telefone;
+
+    const userExist = await User.findOne({ telefone: telefoneNumber });
+
+    if (!userExist) {
+        return res.json({ error: true, message: 'Este telefone não possui uma conta' });
+    };
 
     messagebird.verify.verify(id, token, (err, response) => {
         if (err) {
@@ -97,6 +135,24 @@ router.post('/smsvalidacao', (req, res) => {
             res.json({ error: false, message: 'SMS validado com sucesso' })
         }
     })
-})
+});
+
+
+
+//user adiconar/excluir favorito;
+router.put('/callfavorites/:id', async (req, res) => {
+    try {
+
+        const id = req.params.id;
+
+        const userRefreshed = await User.findByIdAndUpdate(id, req.body);
+
+        res.json({ error: false, userRefreshed });
+
+    } catch (error) {
+        res.json({ error: true, message: error.message });
+    }
+});
+
 
 module.exports = router;
