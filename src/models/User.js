@@ -22,12 +22,28 @@ const User = mongoose.model('User', {
         required: true
     },
     endereco: {
-        type: Object,
+        type: String,
         required: true
     },
     telefone: {
         type: String,
         required: true
+    },
+    foto: {
+        type: String,
+        required: true
+    },
+    imoFavoritos: {
+        type: Array,
+        required: false
+    },
+    imoPosted: {
+        type: Array,
+        required: false
+    },
+    UltPaga: {
+        type: Array,
+        required: false
     }
 });
 
