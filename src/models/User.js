@@ -31,7 +31,7 @@ const User = mongoose.model('User', {
     },
     foto: {
         type: String,
-        required: true
+        required: false
     },
     imoFavoritos: {
         type: Array,

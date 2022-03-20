@@ -139,19 +139,77 @@ router.post('/smsvalidacao', async (req, res) => {
 
 
 
-//user adiconar/excluir favorito;
-router.put('/callfavorites/:id', async (req, res) => {
+//user adiconar favorito;
+router.put('/addfavorites/:idUser', async (req, res) => {
     try {
 
-        const id = req.params.id;
+        const idUser = req.params.idUser;
 
-        const userRefreshed = await User.findByIdAndUpdate(id, req.body);
+        let user = await User.findById(idUser);
+
+        let allProps = user.imoFavoritos;
+
+        const propExist = allProps.some(item => item._id == req.body._id);
+
+        if (propExist) {
+            return res.json({ error: true, message: 'Imóvel já cadastrado' });
+        };
+
+        const userRefreshed = await User.findByIdAndUpdate(idUser, { imoFavoritos: [...allProps, req.body] });
 
         res.json({ error: false, userRefreshed });
 
     } catch (error) {
         res.json({ error: true, message: error.message });
     }
+});
+
+
+///remover favorito
+router.put('/removefavorite/:idUser', async (req, res) => {
+
+    const idUser = req.params.idUser;
+
+    const body = req.body;
+
+
+    try {
+
+        const user = await User.findById(idUser);
+
+        let allFavorites = user.imoFavoritos;
+
+        const propExist = allFavorites.filter(item => item._id == body._id);
+
+        if (propExist) {
+            const newFavorites = allFavorites.filter(item => item._id != body._id);
+
+            const dataRefreshed = await User.findByIdAndUpdate(idUser, { imoFavoritos: newFavorites });
+
+            res.json({ error: false, message:'Imóvel deletado com sucesso' });
+        };
+
+    } catch (error) {
+        res.json({ error: true, message: error.message });
+    }
+});
+
+
+//busca favoritos
+router.get('/callfavorites/:id', async (req, res) => {
+
+    try {
+
+        const userId = req.params.id;
+
+        const user = await User.findById(userId);
+
+        res.json({ error: false, favoriteProps: user.imoFavoritos });
+
+    } catch (error) {
+        res.json({ error: true, message: error.message });
+    }
+
 });
 
 
