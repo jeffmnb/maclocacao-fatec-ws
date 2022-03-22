@@ -7,8 +7,9 @@ const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 
 const Yup = require('yup');
+const { log } = require('npmlog');
 
-const messagebird = require('messagebird')('SW4S76ivxM9nJ0Hx657yPKrv7');
+const messagebird = require('messagebird')('IsfZk3AuRJOMMppmSUuGhIik0');
 
 
 //cadastro do usuario
@@ -89,7 +90,7 @@ router.put('/edita/:id', async (req, res) => {
 
 
 
-//envia validacao sms
+//envia validacao sms (recover)
 router.post('/enviasmsvalidacao', async (req, res) => {
 
     const number = req.body.telefone;
@@ -116,7 +117,27 @@ router.post('/enviasmsvalidacao', async (req, res) => {
 });
 
 
-//valida sms mandado
+//troca de telefone
+router.post('/enviasmsvalidacaotroca', async (req, res) => {
+
+    const number = req.body.telefone;
+
+    messagebird.verify.create(number, {
+        originator: 'Code',
+        template: 'Seu código de verificação para Maclocação é %token.'
+    }, function (err, response) {
+        if (err) {
+            console.log(err);
+            res.json({ error: true, message: 'Não foi possível enviar SMS' });
+        } else {
+            console.log(response);
+            res.json({ response });
+        }
+    })
+});
+
+
+//valida sms mandado (senha)
 router.post('/smsvalidacao', async (req, res) => {
     var id = req.body.id;
     var token = req.body.token;
@@ -132,7 +153,29 @@ router.post('/smsvalidacao', async (req, res) => {
         if (err) {
             res.json({ error: true, id: id });
         } else {
-            res.json({ error: false, message: 'SMS validado com sucesso' })
+            res.json({ error: false, message: 'SMS validado com sucesso' });
+        }
+    })
+});
+
+
+//valida sms mandado (troca de telefone)
+router.post('/smsvalidacaotelefone', async (req, res) => {
+    var id = req.body.id;
+    var token = req.body.token;
+    var telefoneNumber = req.body.telefone;
+    var idUser = req.body.idUser;
+
+    messagebird.verify.verify(id, token, async (err, response) => {
+        if (err) {
+            res.json({ error: true, id: id });
+        } else {
+
+            const data = { telefone: telefoneNumber };
+
+            const response = await User.findByIdAndUpdate(idUser, data);
+
+            res.json({ error: false, message: 'SMS validado com sucesso', response });
         }
     })
 });
@@ -186,7 +229,7 @@ router.put('/removefavorite/:idUser', async (req, res) => {
 
             const dataRefreshed = await User.findByIdAndUpdate(idUser, { imoFavoritos: newFavorites });
 
-            res.json({ error: false, message:'Imóvel deletado com sucesso' });
+            res.json({ error: false, message: 'Imóvel deletado com sucesso' });
         };
 
     } catch (error) {
@@ -207,6 +250,28 @@ router.get('/callfavorites/:id', async (req, res) => {
         res.json({ error: false, favoriteProps: user.imoFavoritos });
 
     } catch (error) {
+        res.json({ error: true, message: error.message });
+    }
+
+});
+
+
+
+//troca foto de perfil
+router.put('/trocafoto/:idUser', async (req, res) => {
+
+    try {
+
+        const body = req.body;
+
+        const idUser = req.params.idUser;
+
+        const newFoto = await User.findByIdAndUpdate(idUser, { foto: body.foto });
+
+        res.json({ error: false, newFoto });
+
+    } catch (error) {
+
         res.json({ error: true, message: error.message });
     }
 
