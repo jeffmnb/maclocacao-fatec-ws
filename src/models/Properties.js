@@ -36,6 +36,10 @@ const Properties = mongoose.model('Properties', {
         required: false //MUDAR PARA TRUE DEPOIS!
     },
     dono: {
+        id: {
+            type: String,
+            required: true
+        },
         nome: {
             type: String,
             required: true
@@ -48,11 +52,11 @@ const Properties = mongoose.model('Properties', {
     nota: {
         numLikes: {
             type: Number,
-            required: true
+            required: false  ///verificar notas
         },
         notaFinal: {
             type: Number,
-            required: true
+            required: false  ///verificar notas
         }
     },
     actions: {

@@ -4,6 +4,8 @@ const router = express.Router();
 
 const User = require('../models/User');
 
+const Properties = require('../models/Properties');
+
 const bcrypt = require('bcryptjs');
 
 const Yup = require('yup');
@@ -198,6 +200,9 @@ router.put('/addfavorites/:idUser', async (req, res) => {
             return res.json({ error: true, message: 'Imóvel já cadastrado' });
         };
 
+        console.log(allProps);
+        console.log(req.body);
+
         const userRefreshed = await User.findByIdAndUpdate(idUser, { imoFavoritos: [...allProps, req.body] });
 
         res.json({ error: false, userRefreshed });
@@ -277,5 +282,25 @@ router.put('/trocafoto/:idUser', async (req, res) => {
 
 });
 
+
+
+//carregar imoveis do user
+router.get('/imoveis/:idUser', async (req, res) => {
+
+    const userId = req.params.idUser;
+
+    try {
+
+        let allProps = await Properties.find({});
+
+        const propsUser = allProps.filter(item => item.dono.id == userId);
+
+        res.json({ error: false, propsUser });
+
+    } catch (error) {
+        res.json({ error: true, message: error.message });
+    }
+
+});
 
 module.exports = router;

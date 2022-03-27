@@ -11,12 +11,12 @@ const app = express();
 app.use(cors());
 
 app.use(bodyParser.json({
-    limit: '100mb'
+    limit: '300mb'
 }));
 
 app.use(bodyParser.urlencoded({
-    limit: '100mb',
-    parameterLimit: 100000,
+    limit: '300mb',
+    parameterLimit: 300000,
     extended: true
 }));
 
