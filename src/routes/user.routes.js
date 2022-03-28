@@ -190,20 +190,21 @@ router.put('/addfavorites/:idUser', async (req, res) => {
 
         const idUser = req.params.idUser;
 
+        const prop = req.body.item;
+
         let user = await User.findById(idUser);
 
         let allProps = user.imoFavoritos;
 
-        const propExist = allProps.some(item => item._id == req.body._id);
+        console.log(allProps);
+
+        const propExist = allProps.some(item => item._id == req.body.item._id);
 
         if (propExist) {
             return res.json({ error: true, message: 'Imóvel já cadastrado' });
         };
 
-        console.log(allProps);
-        console.log(req.body);
-
-        const userRefreshed = await User.findByIdAndUpdate(idUser, { imoFavoritos: [...allProps, req.body] });
+        const userRefreshed = await User.findByIdAndUpdate(idUser, { imoFavoritos: [...allProps, prop] });
 
         res.json({ error: false, userRefreshed });
 
@@ -220,6 +221,7 @@ router.put('/removefavorite/:idUser', async (req, res) => {
 
     const body = req.body;
 
+    console.log(body.item);
 
     try {
 
@@ -227,10 +229,10 @@ router.put('/removefavorite/:idUser', async (req, res) => {
 
         let allFavorites = user.imoFavoritos;
 
-        const propExist = allFavorites.filter(item => item._id == body._id);
+        const propExist = allFavorites.filter(item => item._id == body.item._id);
 
         if (propExist) {
-            const newFavorites = allFavorites.filter(item => item._id != body._id);
+            const newFavorites = allFavorites.filter(item => item._id != body.item._id);
 
             const dataRefreshed = await User.findByIdAndUpdate(idUser, { imoFavoritos: newFavorites });
 
@@ -252,7 +254,9 @@ router.get('/callfavorites/:id', async (req, res) => {
 
         const user = await User.findById(userId);
 
-        res.json({ error: false, favoriteProps: user.imoFavoritos });
+        let allPropsUser = user.imoFavoritos;
+
+        res.json({ error: false, favoriteProps: allPropsUser });
 
     } catch (error) {
         res.json({ error: true, message: error.message });
