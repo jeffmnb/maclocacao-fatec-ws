@@ -1,4 +1,4 @@
-const { eachDayOfInterval, parseISO } = require('date-fns');
+const { eachDayOfInterval, parseISO, nextDay } = require('date-fns');
 const express = require('express');
 const req = require('express/lib/request');
 const { json } = require('express/lib/response');
@@ -90,9 +90,7 @@ router.post('/agendamento', async (req, res) => {
         //pega agendamentos do imovel selecionado
         let SchedulesOfPropSelected = await Schedules.find({ 'imovel._id': body.imovel._id });
 
-
-
-        let permSchedule;
+        let permSchedule = true;
 
         if (SchedulesOfPropSelected.length == 0) {
             const newSchedule = await new Schedules(body).save();
@@ -100,35 +98,34 @@ router.post('/agendamento', async (req, res) => {
             return console.log('salvo por nao ter dados no banco');
         };
 
-        let intervals1 = eachDayOfInterval({
+        let intervalScheduleUser = eachDayOfInterval({
             start: parseISO(body.dataInicio),
             end: parseISO(body.dataFim)
         });
 
-        for (let i = 0; i < intervals1.length; i++) {
+
+        for (let i = 0; i < intervalScheduleUser.length; i++) {
 
             SchedulesOfPropSelected.map((item) => {
 
-                //array dos dias entre as datas inicio e fim
-                let intervals = eachDayOfInterval({
+                let intervalScheduleItem = eachDayOfInterval({
                     start: parseISO(item.dataInicio),
                     end: parseISO(item.dataFim)
                 });
 
-                if (JSON.stringify(item.dataInicio) == JSON.stringify(intervals[i]) || JSON.stringify(item.dataFim) == JSON.stringify(intervals[i]) || JSON.stringify(item.dataInicio) == body.dataInicio || JSON.stringify(item.dataFim) == body.dataFim || JSON.stringify(intervals[i]) == body.dataInicio || JSON.stringify(intervals[i]) == body.dataFim) {
-                    return permSchedule = false;
-                } else {
-                    permSchedule = true;
+                let scheduleExist = intervalScheduleItem.some(any => JSON.stringify(any) == JSON.stringify(intervalScheduleUser[i]));
+
+                if (scheduleExist) {
+                    permSchedule = false;
                 }
-            });
-        }
+            })
+        };
 
-
-        if (permSchedule) {
+        if (!permSchedule) {
+            return res.json({ error: true, message: 'Uma ou mais datas já alugadas.' });
+        } else {
             const newSchedule = await new Schedules(body).save();
             res.json({ error: false, newSchedule });
-        } else {
-            res.json({ error: true, message: 'Uma ou mais datas já alugadas.' });
         }
 
     } catch (error) {
