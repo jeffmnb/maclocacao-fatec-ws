@@ -1,9 +1,13 @@
+const { eachDayOfInterval, parseISO } = require('date-fns');
 const express = require('express');
 const req = require('express/lib/request');
+const { json } = require('express/lib/response');
 
 const router = express.Router();
 
 const Properties = require('../models/Properties');
+
+const Schedules = require('../models/Schedules');
 
 //cadastro de imoveis
 router.post('/cadastro', async (req, res) => {
@@ -73,6 +77,63 @@ router.post('/propcategoria', async (req, res) => {
         res.json({ error: true, message: error.message });
     }
 
+});
+
+
+
+//faz o agendamento de um imovel
+router.post('/agendamento', async (req, res) => {
+    try {
+
+        const body = req.body;
+
+        //pega agendamentos do imovel selecionado
+        let SchedulesOfPropSelected = await Schedules.find({ 'imovel._id': body.imovel._id });
+
+
+
+        let permSchedule;
+
+        if (SchedulesOfPropSelected.length == 0) {
+            const newSchedule = await new Schedules(body).save();
+            res.json({ error: false, newSchedule });
+            return console.log('salvo por nao ter dados no banco');
+        };
+
+        let intervals1 = eachDayOfInterval({
+            start: parseISO(body.dataInicio),
+            end: parseISO(body.dataFim)
+        });
+
+        for (let i = 0; i < intervals1.length; i++) {
+
+            SchedulesOfPropSelected.map((item) => {
+
+                //array dos dias entre as datas inicio e fim
+                let intervals = eachDayOfInterval({
+                    start: parseISO(item.dataInicio),
+                    end: parseISO(item.dataFim)
+                });
+
+                if (JSON.stringify(item.dataInicio) == JSON.stringify(intervals[i]) || JSON.stringify(item.dataFim) == JSON.stringify(intervals[i]) || JSON.stringify(item.dataInicio) == body.dataInicio || JSON.stringify(item.dataFim) == body.dataFim || JSON.stringify(intervals[i]) == body.dataInicio || JSON.stringify(intervals[i]) == body.dataFim) {
+                    return permSchedule = false;
+                } else {
+                    permSchedule = true;
+                }
+            });
+        }
+
+
+        if (permSchedule) {
+            const newSchedule = await new Schedules(body).save();
+            res.json({ error: false, newSchedule });
+        } else {
+            res.json({ error: true, message: 'Uma ou mais datas já alugadas.' });
+        }
+
+    } catch (error) {
+        res.json({ error: true, message: error.message });
+    }
 });
 
 
