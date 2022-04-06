@@ -134,4 +134,22 @@ router.post('/agendamento', async (req, res) => {
 });
 
 
+//cancela um determinado agendamento
+router.delete('/cancelchedule/:idSchedule', async (req, res) => {
+
+    try {
+
+        const idProp = req.params.idSchedule;
+
+        const response = await Schedules.findByIdAndDelete(idProp);
+
+        res.json({ error: false, message: 'Agendamento cancelado com sucesso!' });
+
+    } catch (error) {
+        res.json({ error: true, message: error.message });
+    }
+})
+
+
+
 module.exports = router;

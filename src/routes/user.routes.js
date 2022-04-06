@@ -6,6 +6,8 @@ const User = require('../models/User');
 
 const Properties = require('../models/Properties');
 
+const Schedules = require('../models/Schedules');
+
 const bcrypt = require('bcryptjs');
 
 const Yup = require('yup');
@@ -305,6 +307,22 @@ router.get('/imoveis/:idUser', async (req, res) => {
         res.json({ error: true, message: error.message });
     }
 
+});
+
+
+//carrega os agendamentos do user
+router.get('/myschedules/:userId', async (req, res) => {
+    try {
+
+        const userId = req.params.userId;
+
+        const allSchedulesUser = await Schedules.find({ 'dadosLocatario._id': userId });
+
+        return res.json({ error: false, allSchedulesUser });
+
+    } catch (error) {
+        res.json({ error: true, message: error.message });
+    }
 });
 
 module.exports = router;
