@@ -152,4 +152,57 @@ router.delete('/cancelchedule/:idSchedule', async (req, res) => {
 
 
 
+//filtro de disponibilodade de imoveis por datas;
+router.post('/propbydate', async (req, res) => {
+
+    try {
+
+        let allSchedules = await Schedules.find({});
+
+        let dates = req.body;
+
+        // console.log(dates);
+
+        let interval = eachDayOfInterval({
+            start: parseISO(dates.dataInicio),
+            end: parseISO(dates.dataFim),
+        });
+
+        // console.log(JSON.stringify(interval[1]));
+
+        let existProps = false;
+
+        const result = allSchedules.filter(item => {
+            for (let i = 0; i < interval.length; i++) {
+
+                // console.log(JSON.stringify('Data de Fim: bd' + item.dataFim));
+
+                if (JSON.stringify(item.dataInicio) == JSON.stringify(interval[i])) {
+                    return existProps = true;
+                }
+
+                if (JSON.stringify(item.dataFim) == JSON.stringify(interval[i])) {
+                    return existProps = true;
+                }
+            }
+        });
+
+        if (existProps) {
+            return res.json({ error: true, message: 'Não foram encontrados imóveis disponíveis neste intervalo.' });
+        } else {
+
+            if (result.length < 1) {
+                const props = await Properties.find({});
+                return res.json({ error: false, props });
+            }
+        };
+
+    } catch (error) {
+        res.json({ error: true, message: error.message });
+    }
+
+
+})
+
+
 module.exports = router;
