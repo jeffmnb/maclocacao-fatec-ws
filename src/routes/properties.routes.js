@@ -148,9 +148,7 @@ router.delete('/cancelchedule/:idSchedule', async (req, res) => {
     } catch (error) {
         res.json({ error: true, message: error.message });
     }
-})
-
-
+});
 
 //filtro de disponibilodade de imoveis por datas;
 router.post('/propbydate', async (req, res) => {
@@ -200,9 +198,47 @@ router.post('/propbydate', async (req, res) => {
     } catch (error) {
         res.json({ error: true, message: error.message });
     }
+});
 
 
-})
+// //filtro de imoveis
+// router.post('/filterprops', async (req, res) => {
+
+//     try {
+
+//         const dataFilter = req.body;
+
+//         console.log(dataFilter);
+
+
+//         if (dataFilter.priceOrder == 'Todos' && dataFilter.rest == true && dataFilter.suite == true) {
+
+//             let allProps = await Properties.find({});
+
+//             let propsFiltered = allProps.filter(prop => {
+
+//                 prop.details.numBath.match(dataFilter.numBath)
+//                 prop.details.numBed.match(dataFilter.numBed),
+//                     prop.permAnimais.match(dataFilter.agreePet),
+//                     dataFilter.rest == true && prop.actions.title.match('Restaurante'),
+//                     dataFilter.suite == true && prop.actions.title.match('Suíte')
+//             });
+            
+
+
+//         });
+
+
+// // console.log(allProps);
+
+// res.json({ error: false, allProps });
+//         };
+
+//     } catch (error) {
+//     console.log(error.message);
+// }
+
+// });
 
 
 module.exports = router;

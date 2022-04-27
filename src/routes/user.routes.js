@@ -13,7 +13,7 @@ const bcrypt = require('bcryptjs');
 const Yup = require('yup');
 const { log } = require('npmlog');
 
-const messagebird = require('messagebird')('IsfZk3AuRJOMMppmSUuGhIik0');
+const messagebird = require('messagebird')('Th2pahDI1jyxgXDD7Ty42GxDw');
 
 
 //cadastro do usuario
@@ -147,11 +147,11 @@ router.post('/smsvalidacao', async (req, res) => {
     var token = req.body.token;
     var telefoneNumber = req.body.telefone;
 
-    const userExist = await User.findOne({ telefone: telefoneNumber });
+    // const userExist = await User.findOne({ telefone: telefoneNumber });
 
-    if (!userExist) {
-        return res.json({ error: true, message: 'Este telefone não possui uma conta' });
-    };
+    // if (!userExist) {
+    //     return res.json({ error: true, message: 'Este telefone não possui uma conta' });
+    // };
 
     messagebird.verify.verify(id, token, (err, response) => {
         if (err) {
@@ -323,6 +323,35 @@ router.get('/myschedules/:userId', async (req, res) => {
     } catch (error) {
         res.json({ error: true, message: error.message });
     }
+});
+
+//deleta imovel do user do app
+router.delete('/deleletepropuser/:idUser/:idprop', async (req, res) => {
+
+    const userId = req.params.idUser;
+
+    const propId = req.params.idprop;
+
+    try {
+
+        await Properties.findOneAndDelete({ 'dono.id': userId, _id: propId });
+
+        //deletar agendamentos com este imovel
+        // await Schedules.findOneAndDelete({'imovel._id' : propId});
+
+        //deletar favoritos com este imovel
+        // let allUsers = await User.find({});
+
+        // let imoFavorites = allUsers.imoFavoritos;
+
+        // console.log(imoFavorites);
+
+        res.json({ error: false, message: 'Imóvel deletado com sucesso!' });
+
+    } catch (error) {
+        res.json({ error: true, message: error.message });
+    }
+
 });
 
 module.exports = router;
